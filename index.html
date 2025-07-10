@@ -211,8 +211,6 @@
     }
   }
 
-  canvasElement.addEventListener('mousemove', event => applyRippleAtCoordinates(event.clientX, event.clientY, 2));
-
   function mainAnimationLoop(currentTimestamp) {
     if (!lastFrameTimestamp) lastFrameTimestamp = currentTimestamp;
     let timeElapsed = currentTimestamp - lastFrameTimestamp;
