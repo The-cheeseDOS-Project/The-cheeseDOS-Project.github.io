@@ -1,42 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The cheeseDOS Project</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2em;
-      background-color: #f0f0f0;
-    }
-    header {
-      background-color: #ffbf00;
-      color: white;
-      padding: 1em;
-    }
-    section {
-      margin: 2em 0;
-    }
-    footer {
-      font-size: 0.8em;
-      color: #777;
-      margin-top: 2em;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Readable Water Ripple</title>
+<style type="text/css">
+  html, body {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    background: #122842;
+    font-family: sans-serif;
+    color: white;
+  }
+  #waterCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    display: block;
+    background: linear-gradient(to bottom, #3a4f7a, #22426a);
+  }
+  #overlay {
+    position: relative;
+    z-index: 10;
+    max-width: 600px;
+    margin: 3rem auto;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.6);
+    text-align: center;
+  }
+  #overlay h1 svg {
+      width: 100%;
+      height: auto;
+      max-height: 100px;
+  }
+  a.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.6rem 1.2rem;
+    background: #5577aa;
+    border-radius: 4px;
+    color: white;
+    text-decoration: none;
+    transition: background 0.3s ease;
+  }
+  a.button:hover {
+    background: #7799cc;
+  }
+  a.button svg {
+      height: 1.2em;
+      width: 1.2em;
+      fill: currentColor;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>The cheeseDOS Project</h1></h1>
-  </header>
-  <section>
-    <p>
-  <a href="https://github.com/The-cheeseDOS-Project/cheeseDOS" target="_blank">CheeseDOS</a> is a fully GNU, custom C written, super small 11.3MB live command-based operating system that loads into random access memory.
-   </p>
-  </section>
-  <footer>
-    <p>© 2025 The cheeseDOS Project</p>
-  </footer>
+
+<canvas id="waterCanvas"></canvas>
+
+<div id="overlay">
+  <h1>
+   cheeseDOS
+  </h1>
+  <p>cheeseDOS is a fully GNU, custom C written, super small 11.3MB live command based operating system that loads into random access memory.</p>
+  <a href="https://github.com/The-cheeseDOS-Project/cheeseDOS" class="button">
+    <svg width="98" height="96" viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d=
+            "M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" 
+            fill="#fff"/>
+    </svg>
+    GitHub
+  </a>
+</div>
+
+<script type="application/javascript">
+// <![CDATA[
+(() => {
+  const canvasElement = document.getElementById('waterCanvas');
+  const canvasContext = canvasElement.getContext('2d', { alpha: false });
+
+  let canvasWidth, canvasHeight;
+  let gridCols, gridRows;
+  const wavePropagationFactor = 0.5;
+  const waveDamping = 0.99;
+
+  let currentWaveHeights, previousWaveHeights, temporaryWaveBuffer;
+  let lastFrameTimestamp = 0;
+  const frameRateInterval = 1000 / 30;
+
+  let lastDropTimestamp = 0;
+  const dropGenerationInterval = 2000;
+  const dropImpactStrength = 4;
+
+  const ditherIntensity = 30;
+
+  const colorBrightnessOffset = 128;
+  const maxDisplacementBrightnessFactor = 20;
+  const redColorFactor = 1/3;
+  const greenColorFactor = 1/2;
+
+  const gridResolutionDivisorX = 8;
+  const gridResolutionDivisorY = 8;
+  const maxGridCols = 200;
+  const maxGridRows = 150;
+
+  function handleResize() {
+    canvasWidth = canvasElement.width = window.innerWidth;
+    canvasHeight = canvasElement.height = window.innerHeight;
+
+    gridCols = Math.min(maxGridCols, Math.floor(canvasWidth / gridResolutionDivisorX));
+    gridRows = Math.min(maxGridRows, Math.floor(canvasHeight / gridResolutionDivisorY));
+
+    currentWaveHeights = new Float32Array(gridCols * gridRows);
+    previousWaveHeights = new Float32Array(gridCols * gridRows);
+  }
+  window.addEventListener('resize', handleResize);
+  handleResize();
+
+  function updateWaveSimulationStep() {
+    const currentBuffer = currentWaveHeights;
+    const previousBuffer = previousWaveHeights;
+    const numCols = gridCols;
+    const numRows = gridRows;
+
+    for(let row = 1; row < numRows - 1; row++) {
+      let rowBaseIndex = row * numCols;
+      for(let col = 1; col < numCols - 1; col++) {
+        let currentIndex = rowBaseIndex + col;
+        currentBuffer[currentIndex] = (
+          (previousBuffer[currentIndex - 1] + previousBuffer[currentIndex + 1] +
+           previousBuffer[currentIndex - numCols] + previousBuffer[currentIndex + numCols]) * wavePropagationFactor
+          - currentBuffer[currentIndex]
+        ) * waveDamping;
+      }
+    }
+
+    for (let col = 0; col < numCols; col++) {
+        currentBuffer[col] = 0;
+        currentBuffer[(numRows - 1) * numCols + col] = 0;
+    }
+    for (let row = 1; row < numRows - 1; row++) {
+        currentBuffer[row * numCols] = 0;
+        currentBuffer[row * numCols + (numCols - 1)] = 0;
+    }
+
+    temporaryWaveBuffer = previousBuffer;
+    previousWaveHeights = currentBuffer;
+    currentWaveHeights = temporaryWaveBuffer;
+  }
+
+  function drawRipplesToCanvas() {
+    const horizontalSpacing = canvasWidth / gridCols;
+    const verticalSpacing = canvasHeight / gridRows;
+
+    let imageData = canvasContext.createImageData(canvasWidth, canvasHeight);
+    let pixelData = imageData.data;
+
+    const currentCanvasWidth = canvasWidth;
+    const currentCanvasHeight = canvasHeight;
+
+    for(let gridRow = 0; gridRow < gridRows; gridRow++) {
+      let pixelY = Math.floor(gridRow * verticalSpacing);
+      if (pixelY >= currentCanvasHeight) continue;
+
+      for(let gridCol = 0; gridCol < gridCols; gridCol++) {
+        let pixelX = Math.floor(gridCol * horizontalSpacing);
+        if (pixelX >= currentCanvasWidth) continue;
+
+        let gridIndex = gridRow * gridCols + gridCol;
+        let displacementValue = previousWaveHeights[gridIndex];
+
+        let baseBrightness = colorBrightnessOffset + displacementValue * maxDisplacementBrightnessFactor;
+
+        for(let offsetY = 0; offsetY < verticalSpacing; offsetY++) {
+          let drawPixelY = pixelY + offsetY;
+          if(drawPixelY >= currentCanvasHeight) break;
+
+          let rowStartingPixelIndex = (drawPixelY * currentCanvasWidth + pixelX) * 4;
+
+          for(let offsetX = 0; offsetX < horizontalSpacing; offsetX++) {
+            let pixelArrayOffset = rowStartingPixelIndex + offsetX * 4;
+
+            let finalBrightness = (baseBrightness + (Math.random() - 0.5) * ditherIntensity);
+            finalBrightness = Math.min(255, Math.max(0, finalBrightness)) | 0;
+
+            pixelData[pixelArrayOffset] = finalBrightness * redColorFactor;
+            pixelData[pixelArrayOffset+1] = finalBrightness * greenColorFactor;
+            pixelData[pixelArrayOffset+2] = finalBrightness;
+            pixelData[pixelArrayOffset+3] = 255;
+          }
+        }
+      }
+    }
+    canvasContext.putImageData(imageData, 0, 0);
+  }
+
+  function applyRippleAtCoordinates(coordX, coordY, strengthValue) {
+    const gridX = Math.min(gridCols - 3, Math.max(2, Math.floor((coordX / canvasWidth) * gridCols)));
+    const gridY = Math.min(gridRows - 3, Math.max(2, Math.floor((coordY / canvasHeight) * gridRows)));
+
+    for(let deltaY = -2; deltaY <= 2; deltaY++) {
+      for(let deltaX = -2; deltaX <= 2; deltaX++) {
+        previousWaveHeights[(gridY + deltaY) * gridCols + (gridX + deltaX)] = strengthValue;
+      }
+    }
+  }
+
+  canvasElement.addEventListener('mousemove', event => applyRippleAtCoordinates(event.clientX, event.clientY, 2));
+
+  function mainAnimationLoop(currentTimestamp) {
+    if (!lastFrameTimestamp) lastFrameTimestamp = currentTimestamp;
+    let timeElapsed = currentTimestamp - lastFrameTimestamp;
+
+    if (timeElapsed > frameRateInterval) {
+      lastFrameTimestamp = currentTimestamp - (timeElapsed % frameRateInterval);
+
+      updateWaveSimulationStep();
+
+      if (currentTimestamp - lastDropTimestamp >= dropGenerationInterval) {
+        const randomX = Math.random() * canvasWidth;
+        const randomY = Math.random() * canvasHeight;
+        applyRippleAtCoordinates(randomX, randomY, dropImpactStrength);
+        lastDropTimestamp = currentTimestamp;
+      }
+
+      drawRipplesToCanvas();
+    }
+
+    requestAnimationFrame(mainAnimationLoop);
+  }
+
+  requestAnimationFrame(mainAnimationLoop);
+
+})();
+// ]]>
+</script>
+
 </body>
 </html>
