@@ -38,16 +38,15 @@ const renderer = new THREE.WebGLRenderer({ antialias: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-const bluePalette = [
-  "#001f3f", "#00264d", "#003366", "#003d80",
-  "#004080", "#004c99", "#0059b3", "#0066cc",
-  "#0073e6", "#0080ff", "#3399ff", "#4da9ff",
-  "#66b2ff", "#80c1ff", "#99ccff", "#b3d9ff",
-  "#cce5ff", "#e6f2ff", "#b3e0ff", "#99d6ff",
-  "#80ccff", "#66c2ff", "#4db8ff", "#33adff",
-  "#1aa3ff", "#0099ff", "#008ae6", "#007acc",
-  "#006bb3", "#005c99", "#004d80", "#003d66"
-].map(hex => new THREE.Color(hex));
+const bluePalette = [];
+for (let i = 0; i < 256; i++) {
+  const t = i / 255;
+  const minLightness = 0.15;
+  const maxLightness = 1.0;
+  const lightness = minLightness + t * (maxLightness - minLightness);
+  const color = new THREE.Color().setHSL(0.6, 1.0, lightness);
+  bluePalette.push(color);
+}
 
 const geometry = new THREE.PlaneGeometry(256, 256, 256, 256);
 geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Array(geometry.attributes.position.count * 3), 3));
@@ -74,7 +73,7 @@ function animate() {
     pos.setZ(i, z);
 
     const normalized = (z + 2) / 4;
-    const index = Math.max(0, Math.min(15, Math.floor(normalized * 15)));
+    const index = Math.max(0, Math.min(255, Math.floor(normalized * 255)));
     const color = bluePalette[index];
     col.setXYZ(i, color.r, color.g, color.b);
   }
