@@ -39,13 +39,17 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
 const bluePalette = [
-  "#001f3f", "#003366", "#004080", "#0059b3",
-  "#0073e6", "#3399ff", "#66b2ff", "#99ccff",
-  "#cce5ff", "#e6f2ff", "#b3d9ff", "#80c1ff",
-  "#4da9ff", "#1a91ff", "#007acc", "#005c99"
+  "#001f3f", "#00264d", "#003366", "#003d80",
+  "#004080", "#004c99", "#0059b3", "#0066cc",
+  "#0073e6", "#0080ff", "#3399ff", "#4da9ff",
+  "#66b2ff", "#80c1ff", "#99ccff", "#b3d9ff",
+  "#cce5ff", "#e6f2ff", "#b3e0ff", "#99d6ff",
+  "#80ccff", "#66c2ff", "#4db8ff", "#33adff",
+  "#1aa3ff", "#0099ff", "#008ae6", "#007acc",
+  "#006bb3", "#005c99", "#004d80", "#003d66"
 ].map(hex => new THREE.Color(hex));
 
-const geometry = new THREE.PlaneGeometry(256, 256, 128, 128);
+const geometry = new THREE.PlaneGeometry(256, 256, 256, 256);
 geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Array(geometry.attributes.position.count * 3), 3));
 
 const material = new THREE.MeshBasicMaterial({ vertexColors: true });
