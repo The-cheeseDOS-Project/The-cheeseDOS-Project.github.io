@@ -38,14 +38,14 @@ const renderer = new THREE.WebGLRenderer({ antialias: false });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-const bluePalette = Array.from({ length: 256 }, (_, i) => {
-  const r = Math.round(0 + (230 - 0) * (i / 255));
-  const g = Math.round(31 + (242 - 31) * (i / 255));
-  const b = Math.round(63 + (255 - 63) * (i / 255));
-  return new THREE.Color(r / 255, g / 255, b / 255);
-});
+const bluePalette = [
+  "#001f3f", "#003366", "#004080", "#0059b3",
+  "#0073e6", "#3399ff", "#66b2ff", "#99ccff",
+  "#cce5ff", "#e6f2ff", "#b3d9ff", "#80c1ff",
+  "#4da9ff", "#1a91ff", "#007acc", "#005c99"
+].map(hex => new THREE.Color(hex));
 
-const geometry = new THREE.PlaneGeometry(256, 256, 256, 256);
+const geometry = new THREE.PlaneGeometry(256, 256, 128, 128);
 geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Array(geometry.attributes.position.count * 3), 3));
 
 const material = new THREE.MeshBasicMaterial({ vertexColors: true });
@@ -69,8 +69,8 @@ function animate() {
     const z = (wave1 + wave2 + wave3 + wave4) * 0.5;
     pos.setZ(i, z);
 
-    const normalized = Math.max(0, Math.min(1, (z + 2) / 4));
-    const index = Math.floor(normalized * 255);
+    const normalized = (z + 2) / 4;
+    const index = Math.max(0, Math.min(15, Math.floor(normalized * 15)));
     const color = bluePalette[index];
     col.setXYZ(i, color.r, color.g, color.b);
   }
